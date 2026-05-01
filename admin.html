@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leader Zenith - Admin Portal</title>
+    <style>
+        /* Styles match your Zenith theme exactly */
+        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .admin-box { max-width: 600px; margin: 0 auto; border: 1px solid #333; padding: 20px; border-radius: 10px; background: #111; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; }
+        button { background: #0078ff; cursor: pointer; font-weight: bold; }
+        button.delete { background: #ff4444; width: auto; padding: 5px 10px; }
+        .item-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 10px; margin-bottom: 5px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-box" id="loginSection">
+    <h2>Admin Verification</h2>
+    <input type="password" id="adminPass" placeholder="Enter Password">
+    <button onclick="verifyAdmin()">Login</button>
+</div>
+
+<div class="admin-box" id="adminDashboard" style="display:none;">
+    <h2>Leader Zenith Dashboard</h2>
+    
+    <div class="upload-section">
+        <h3>Add New Asset</h3>
+        <input type="text" id="itemName" placeholder="Item Name (e.g. OneBlock Plugin)">
+        <input type="text" id="itemUrl" placeholder="Image/File URL">
+        <select id="itemCategory" style="width:100%; padding:10px; background:#222; color:#fff;">
+            <option value="plugin">Plugin</option>
+            <option value="render">Gallery Render</option>
+        </select>
+        <button onclick="saveItem()">Add to Website</button>
+    </div>
+
+    <div class="item-list">
+        <h3>Manage Existing Assets</h3>
+        <div id="displayList"></div>
+    </div>
+</div>
+
+<script>
+    const PASS = "ahmadop1122";
+    
+    function verifyAdmin() {
+        const input = document.getElementById('adminPass').value;
+        if(input === PASS) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            loadItems();
+        } else {
+            alert("Unauthorized Access.");
+        }
+    }
+
+    // This handles saving. 
+    // IMPORTANT: For this to show on OTHER phones, you must link this 
+    // to a Firebase or Database. This code uses LocalStorage for now
+    // as a placeholder until you specify your hosting type.
+    function saveItem() {
+        const name = document.getElementById('itemName').value;
+        const url = document.getElementById('itemUrl').value;
+        const cat = document.getElementById('itemCategory').value;
+
+        if(!name || !url) return alert("Fill all fields");
+
+        const newItem = { id: Date.now(), name, url, cat };
+        let items = JSON.parse(localStorage.getItem('zenith_assets') || "[]");
+        items.push(newItem);
+        localStorage.setItem('zenith_assets', JSON.stringify(items));
+        
+        alert("Added successfully!");
+        loadItems();
+    }
+
+    function loadItems() {
+        const list = document.getElementById('displayList');
+        const items = JSON.parse(localStorage.getItem('zenith_assets') || "[]");
+        list.innerHTML = "";
+
+        items.forEach(item => {
+            list.innerHTML += `
+                <div class="item-row">
+                    <span><strong>[${item.cat}]</strong> ${item.name}</span>
+                    <button class="delete" onclick="removeItem(${item.id})">Remove</button>
+                </div>
+            `;
+        });
+    }
+
+    function removeItem(id) {
+        let items = JSON.parse(localStorage.getItem('zenith_assets') || "[]");
+        items = items.filter(i => i.id !== id);
+        localStorage.setItem('zenith_assets', JSON.stringify(items));
+        loadItems();
+    }
+</script>
+</body>
+</html>
